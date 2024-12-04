@@ -20,9 +20,9 @@ query:
   main_table AS (
   SELECT DISTINCT
   p.[Policy No],
-  a.[Division],
-  a.[Class],
-  a.[Line of Business],
+  p.[Division],
+  p.[Class],
+  p.[Line of Business],
   b.[Branch],
   p.[Policy YOA],
   p.[Inception Date],
@@ -37,9 +37,7 @@ query:
   p.[RFiD RAG],
   cyber_claims.[Counter]
   FROM [MI_Analytics_Layer].[udm].[PolicyDetail] p
-  LEFT JOIN [udm].[PremiumTransactions] t ON p.PID = t.PID --included only to get CCA & branch joins
-  LEFT JOIN [udm].[CCA] a ON t.[CCA ID] = a.[CCA ID] --joined for CCA fields
-  LEFT JOIN [udm].[LocationBranch] b ON t.[Branch ID] = b.[Branch ID] --joined for branch
+  LEFT JOIN [udm].[LocationBranch] b ON p.[Branch ID] = b.[Branch ID] --joined for branch
   LEFT JOIN cyber_claims ON p.PID = cyber_claims.PID
 
   WHERE YOA > 2009
