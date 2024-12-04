@@ -1,0 +1,61 @@
+import: secret_config.yaml
+
+server_name: secret_server_name
+database_name: secret_database_name
+
+query:
+  /*
+  SQL Query - Policy Details
+  An example SQL query with anonymised names.
+  */
+
+  WITH cyber_claims AS (
+  SELECT DISTINCT
+  s.PID,
+  COUNT(DISTINCT s.CID) AS [Counter]
+  FROM [ClaimSummary] s
+  LEFT JOIN [ClaimDetail] d ON s.CID = d.CID --Joined for cause of loss filter
+  WHERE [Cause Of Loss] LIKE '%cyber%'
+  GROUP BY s.PID
+  ),
+
+  main_table AS (
+  SELECT DISTINCT
+  p.[Policy No],
+  a.[Division],
+  a.[Class],
+  a.[Line of Business],
+  b.[Branch],
+  p.[Policy YOA],
+  p.[Inception Date],
+  p.[New Renewal],
+  p.[Lead Follow],
+  p.[Industry Name],
+  p.[Insured Name],
+  p.[Direct Assumed],
+  p.[Renewal Status],
+  p.[Gross Premium],
+  p.[Signed Line],
+  p.[RFiD RAG],
+  cyber_claims.[Counter]
+  FROM [MI_Analytics_Layer].[udm].[PolicyDetail] p
+  LEFT JOIN [udm].[PremiumTransactions] t ON p.PID = t.PID --included only to get CCA & branch joins
+  LEFT JOIN [udm].[CCA] a ON t.[CCA ID] = a.[CCA ID] --joined for CCA fields
+  LEFT JOIN [udm].[LocationBranch] b ON t.[Branch ID] = b.[Branch ID] --joined for branch
+  LEFT JOIN cyber_claims ON p.PID = cyber_claims.PID
+
+  WHERE YOA > 2009
+  AND p.[Expiry Date] < GETDATE()
+  ),
+
+  --Added to significantly reduce the size of the dataset
+  subquery AS (
+  SELECT TOP 15210 * FROM main_table
+  WHERE [Counter] IS NULL
+  ORDER BY NEWID()
+  )
+
+  SELECT * FROM main_table
+  WHERE [Counter] > 0
+  UNION ALL
+  SELECT * FROM subquery
