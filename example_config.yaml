@@ -1,7 +1,5 @@
-import: secret_config.yaml
-
-server_name: secret_server_name
-database_name: secret_database_name
+server_name: 'secret_server_name'
+database_name: 'secret_database_name'
 
 query:
   /*
