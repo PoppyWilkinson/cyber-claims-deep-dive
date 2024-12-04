@@ -16,14 +16,7 @@ def get_sa_engine(database_name: str, server_name: str) -> sa.engine:
     return engine
 
 
-def get_data_extract(engine: sa.engine,
-                     query: str) -> pd.DataFrame:
-                    # dtype_dict:dict,
-                    # dates_to_parse:list=None) -> pd.DataFrame:
-
+def get_data_extract(engine: sa.engine, query: str) -> pd.DataFrame:
     df = pd.read_sql(sql=query,
                      con=engine)
-                     #dtype=dtype_dict,
-                     #parse_dates=dates_to_parse)
-
     return df
